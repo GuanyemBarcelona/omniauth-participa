@@ -30,6 +30,10 @@ describe OmniAuth::Strategies::Participa do
       expect(subject.client.options[:token_url]).to eq('/oauth/token')
     end
 
+    it 'has correct endpoint_url' do
+      expect(subject.client.options[:endpoint_url]).to eq('/api/v2/users/me')
+    end
+
     describe 'overrides' do
       it 'should allow overriding the site' do
         @options = { client_options: {'site' => 'https://example.com'} }
@@ -44,6 +48,11 @@ describe OmniAuth::Strategies::Participa do
       it 'should allow overriding the token_url' do
         @options = { client_options: {'token_url' => 'https://example.com/oauth/token'} }
         expect(subject.client.options[:token_url]).to eq('https://example.com/oauth/token')
+      end
+
+      it 'should allow overriding the endpoint_url' do
+        @options = { client_options: {'endpoint_url' => 'https://example.com/api/v1/users/show'} }
+        expect(subject.client.options[:endpoint_url]).to eq('https://example.com/api/v1/users/show')
       end
     end
   end
