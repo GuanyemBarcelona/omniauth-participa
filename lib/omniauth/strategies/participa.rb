@@ -43,7 +43,7 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= acces_token.get(options[:client_options].try(:endpoint_url)).parsed
+        @raw_info ||= access_token.get(options[:client_options].try(:endpoint_url)).parsed
       end
 
       # https://github.com/intridea/omniauth-oauth2/issues/81
