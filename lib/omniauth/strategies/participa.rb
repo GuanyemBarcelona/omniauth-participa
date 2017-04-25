@@ -7,10 +7,9 @@ module OmniAuth
       option :name, :participa
       option :scope, 'public'
       option :authorize_options, [:redirect_uri, :scope]
-      option :provider_ignores_state, true
 
       option :client_options, {
-        site: 'http://participa.dev',
+        site: 'https://participa.dev',
         authorize_url: '/oauth/authorize',
         token_url: '/oauth/token',
         endpoint_url: '/api/v2/users/me'
@@ -37,13 +36,12 @@ module OmniAuth
         }
       end
 
-      # TODO: add user groups
       extra do
         skip_info? ? {} : { raw_info: raw_info }
       end
 
       def raw_info
-        @raw_info ||= access_token.get(options[:client_options].try(:endpoint_url)).parsed
+        @raw_info ||= access_token.get(options[:client_options][:endpoint_url]).parsed
       end
 
       # https://github.com/intridea/omniauth-oauth2/issues/81

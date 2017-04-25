@@ -3,7 +3,9 @@ require 'spec_helper'
 describe OmniAuth::Strategies::Participa do
   let(:request) { double('Request', params: {}, cookies: {}, env: {}) }
   let(:app) { -> {[200, {}, ['Participa']]} }
-  let(:raw_info) { {'id' => 'uid', 'admin' => true, 'email' => 'jane-doe@example.com', 'username' => 'jane-doe', 'full_name' => 'Jane Doe'} }
+  let(:raw_info) {
+    {'id' => 'uid', 'admin' => true, 'email' => 'jane-doe@example.com', 'username' => 'jane-doe', 'full_name' => 'Jane Doe'}
+  }
 
   subject do
     OmniAuth::Strategies::Participa.new(app, 'appid', 'secret', @options || {}).tap do |strategy|
@@ -72,8 +74,8 @@ describe OmniAuth::Strategies::Participa do
       end
 
       it 'should set the redirect_uri parameter if present' do
-        @options = { redirect_uri: 'htts://example.com/auth/participa/callback' }
-        expect(subject.authorize_params['redirect_uri']).to eq('htts://example.com/auth/participa/callback')
+        @options = { redirect_uri: 'https://example.com/auth/participa/callback' }
+        expect(subject.authorize_params['redirect_uri']).to eq('https://example.com/auth/participa/callback')
       end
     end
 
@@ -105,6 +107,27 @@ describe OmniAuth::Strategies::Participa do
     end
   end
 
+  describe '#callback_url' do
+    it 'should return the redirect_uri parameter if present' do
+      @options = { redirect_uri: 'https://example.com/auth/foo/callback' }
+      expect(subject.callback_url).to eq('https://example.com/auth/foo/callback')
+    end
+  end
+
+  describe '#raw_info' do
+    before do
+      access_token = double('access_token')
+      response = double('response', parsed: { foo: 'bar' })
+
+      expect(access_token).to receive(:get).with('/api/v2/users/me').and_return(response)
+      allow(subject).to receive(:access_token) { access_token }
+    end
+
+    it 'returns parsed response from access token' do
+      expect(subject.raw_info).to eq({ foo: 'bar'})
+    end
+  end
+
   describe '#uid' do
     it 'should return the user id' do
       allow(subject).to receive(:raw_info).and_return(raw_info)
@@ -131,6 +154,28 @@ describe OmniAuth::Strategies::Participa do
 
     it 'should include the user admin flag' do
       expect(subject.info[:admin]).to eq(raw_info['admin'])
+    end
+  end
+
+  describe '#extra' do
+    before do
+      allow(subject).to receive(:raw_info).and_return(raw_info)
+    end
+
+    context "when skip info is true" do
+      before { subject.options.skip_info = true }
+
+      it 'should not include raw_info' do
+        expect(subject.extra).not_to have_key(:raw_info)
+      end
+    end
+
+    context "when skip info is false" do
+      before { subject.options.skip_info = false }
+
+      it 'should include raw_info' do
+        expect(subject.extra[:raw_info]).to eq(raw_info)
+      end
     end
   end
 end
